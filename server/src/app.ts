@@ -174,6 +174,9 @@ export function createApp(config?: Config) {
       res.setHeader('Origin-Agent-Cluster', '?1');
     }
 
+    // Instruct search engines and crawlers not to index or archive any responses
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+
     next();
   });
   app.use(cors({
@@ -322,6 +325,12 @@ export function createApp(config?: Config) {
   // static / SPA-fallback block below so these root paths resolve to JSON
   // instead of index.html.
   app.use(statusRouter);
+
+  // Search engine crawler exclusion (GET /robots.txt).
+  // Explicit route so crawlers receive plain text even if static assets are not served.
+  app.get('/robots.txt', (_req, res) => {
+    res.type('text/plain').send('User-agent: *\nDisallow: /\n');
+  });
 
   // Error handler (for API routes)
   app.use(errorHandler);
